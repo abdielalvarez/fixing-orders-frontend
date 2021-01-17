@@ -1,20 +1,20 @@
-import { CREATE_USER, LOGIN_USER } from "../actions/user";
+import { GET_ORDER, UPDATE_ORDER } from "../actions/order";
 
 const initialState = {
-  user: null
+  orders: []
 }
 
 export default function user(state = initialState, action) {
   switch (action.type) {
-    case CREATE_USER:
+    case GET_ORDER:
       return {
         ...state,
-        user: action.data
+        orders: action.data
       }
-    case LOGIN_USER:
+    case UPDATE_ORDER:
       return {
         ...state,
-        user: action.data
+        orders: action.data
       }
     default:
       return state;

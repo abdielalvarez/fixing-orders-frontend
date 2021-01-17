@@ -1,35 +1,59 @@
-import React, { useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
-import Navbar from '../../components/Navbar';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import AutoCards from '../../components/Cards';
+import OrderCard from '../../components/Cards';
+import { getOrders, updateOrder } from '../../store/actions/order';
+import Modal from '../../components/Modal';
 
-const Home = ({ user }) => {
+const Home = ({ orders, getOrders, updateOrder }) => {
 
-    const array = [1, 2, 3, 4]
+    const handleMaintain = async data => {
+        handleClose()
+        if (data.inMaintenance) {
+            let body = {
+                ...data,
+                inMaintenance: false
+            }
+            await updateOrder(body, orders)
+        } else {
+            handleOpen()
+            setData(data)
+        }
+    }
 
-    const history = useHistory()
+    const [ data, setData ] = useState({})
+    const [ open, setOpen ] = useState({})
+
+    const handleClose = () => {
+        setOpen(false)
+    }
+
+    const handleOpen = () => {
+        setOpen(true)
+    }
 
     useEffect(() => {
-        if (!user) {
-            history.push('/sign-in')
-        }
-    }, [])
-
-    const handleMaintain = (data) => {
-        console.log('data', data);
-    }
+        getOrders()
+    }, [orders])
 
     return (
         <div>
-            <Navbar />
-            <h3 className="text-success mb-5 mt-3 ml-3">Vea su catálogo</h3>
-            <div className="row row-cols-1 row-cols-md-3 g-4 container mt-5 d-flex justify-center">
-                {array && array.length && array.length > 0 ?
-                    array.map((elem, index) => {
+            {open ? <Modal data={data} handleClose={handleClose} /> : null}
+            <h1 className="text-success mb-10 mt-3 container text-center">See your orders</h1>
+            <div
+                className="row row-cols-1 row-cols-md-3 g-4 container mt-5 d-flex justify-center"
+                style={{
+                    margin: '0 auto'
+                }}
+            >
+                {orders && orders.length && orders.length > 0 ?
+                    orders.map((elem, index) => {
                         return (
-                            <AutoCards key={index} handleMaintain={handleMaintain} />
-                        )       
+                            <OrderCard
+                                key={index}
+                                data={elem}
+                                handleMaintain={handleMaintain}
+                            />
+                        )
                     }) : null
                 }
             </div>
@@ -38,7 +62,12 @@ const Home = ({ user }) => {
 }
 
 const mapStateToProps = state => ({
-    user: state.user && state.user.user ? state.user.user : null
+    orders: state.order.orders,
 })
 
-export default connect(mapStateToProps, null)(Home);
+const mapDispatchToProps = dispatch => ({
+    getOrders: () => dispatch(getOrders()),
+    updateOrder: (body, orders) => dispatch(updateOrder(body, orders))
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
